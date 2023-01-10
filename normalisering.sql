@@ -58,3 +58,30 @@ ALTER TABLE StudentSchool MODIFY COLUMN SchoolId INT;
 ALTER TABLE StudentSchool ADD PRIMARY KEY(StudentId, SchoolId);
 
 
+/* Normalisera PhoneBook */
+
+DROP TABLE IF EXISTS Phone;
+CREATE TABLE Phone (
+    PhoneId INT NOT NULL AUTO_INCREMENT,
+    StudentId INT NOT NULL,
+    Type VARCHAR(32),
+    Number VARCHAR(32) NOT NULL,
+    CONSTRAINT PRIMARY KEY(PhoneId)
+);
+
+INSERT INTO Phone(StudentId, Type, Number)
+SELECT Id As StudentId, "Home" AS Type, HomePhone as Number FROM UNF
+WHERE HomePhone IS NOT NULL AND HomePhone != ''
+UNION SELECT Id As StudentId, "Job" AS Type, JobPhone as Number FROM UNF
+WHERE JobPhone IS NOT NULL AND JobPhone != ''
+UNION SELECT Id As StudentId, "Mobile" AS Type, MobilePhone1 as Number FROM UNF
+WHERE MobilePhone1 IS NOT NULL AND MobilePhone1 != ''
+UNION SELECT Id As StudentId, "Mobile2" AS Type, MobilePhone2 as Number FROM UNF
+WHERE MobilePhone2 IS NOT NULL AND MobilePhone2 != ''
+;
+
+/* Skapa vy PhoneList */
+DROP VIEW IF EXISTS PhoneList;
+CREATE VIEW PhoneList AS SELECT StudentId, group_concat(Number) AS Numbers FROM Phone GROUP BY StudentId;
+
+
