@@ -64,7 +64,6 @@ UPDATE School SET SchoolId =  (SELECT @id := @id + 1);
 
 
 /* Skapa kopplingstabell student-school */
-
 DROP TABLE IF EXISTS StudentSchool;
 
 CREATE TABLE StudentSchool AS SELECT DISTINCT UNF.Id AS StudentId, School.SchoolId
@@ -75,7 +74,6 @@ ALTER TABLE StudentSchool ADD PRIMARY KEY(StudentId, SchoolId);
 
 
 /* Normalisera PhoneBook */
-
 DROP TABLE IF EXISTS Phone;
 CREATE TABLE Phone (
     PhoneId INT NOT NULL AUTO_INCREMENT,
@@ -145,3 +143,15 @@ CREATE TABLE StudentHobbies (
 INSERT INTO StudentHobbies(StudentId, HobbyId)
 SELECT Hobbies.StudentId AS StudentId, HobbyList.HobbyId AS HobbyId FROM Hobbies JOIN HobbyList USING (Hobby);
 
+DROP VIEW IF EXISTS HobbiesView;
+CREATE VIEW HobbiesView AS SELECT StudentId, group_concat(Hobby) FROM StudentHobbies JOIN HobbyList USING (HobbyId) 
+GROUP BY StudentId;
+
+DROP VIEW IF EXISTS NormalizedUNF;
+CREATE VIEW NormalizedUNF AS
+SELECT StudentId as ID, Student.Name, Grade.Assessment AS Grade, Hobbies, School.Name AS School, City, Numbers FROM StudentSchool
+LEFT JOIN Student USING (StudentId)
+LEFT JOIN Grade USING (GradeId)
+LEFT JOIN HobbiesView USING (StudentId)
+LEFT JOIN School USING (SchoolId)
+LEFT JOIN PhoneList USING (StudentId);
