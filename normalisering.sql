@@ -118,4 +118,14 @@ UNION SELECT Id As StudentId, trim(substring_index(Hobbies, ",", -1)) AS Hobby F
 WHERE Hobbies IS NOT NULL AND Hobbies != ''
 ;
 
+/* skapa kopplingstabell student-hobbies */
+DROP TABLE IF EXISTS StudentHobbies;
+CREATE TABLE StudentHobbies (
+    StudentId INT NOT NULL,
+    HobbyId INT NOT NULL,
+    CONSTRAINT PRIMARY KEY(StudentId, HobbyId)
+);
+
+INSERT INTO StudentHobbies(StudentId, HobbyId)
+SELECT Hobbies.StudentId AS StudentId, HobbyList.HobbyId AS HobbyId FROM Hobbies JOIN HobbyList USING (Hobby);
 
