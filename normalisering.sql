@@ -85,3 +85,37 @@ DROP VIEW IF EXISTS PhoneList;
 CREATE VIEW PhoneList AS SELECT StudentId, group_concat(Number) AS Numbers FROM Phone GROUP BY StudentId;
 
 
+/* Normalisera hobby */
+
+DROP TABLE IF EXISTS HobbyList;
+CREATE TABLE HobbyList AS SELECT DISTINCT 0 As HobbyId, trim(SUBSTRING_INDEX(Hobbies, ",", 1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+UNION SELECT DISTINCT 0 As HobbyId, trim(substring_index(substring_index(Hobbies, ",", -2),"," ,1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+UNION SELECT DISTINCT 0 As HobbyId, trim(substring_index(Hobbies, ",", -1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+;
+
+SET @id = 0;
+UPDATE HobbyList SET HobbyId =  (SELECT @id := @id + 1);
+
+ALTER TABLE HobbyList ADD PRIMARY KEY(HobbyId);
+
+/* --- */
+
+DROP TABLE IF EXISTS Hobbies;
+CREATE TABLE Hobbies (
+    StudentId INT NOT NULL,
+    Hobby VARCHAR(64) NOT NULL
+);
+
+INSERT INTO Hobbies(StudentId, Hobby)
+SELECT Id As StudentId, trim(SUBSTRING_INDEX(Hobbies, ",", 1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+UNION SELECT Id As StudentId, trim(substring_index(substring_index(Hobbies, ",", -2),"," ,1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+UNION SELECT Id As StudentId, trim(substring_index(Hobbies, ",", -1)) AS Hobby FROM UNF
+WHERE Hobbies IS NOT NULL AND Hobbies != ''
+;
+
+
