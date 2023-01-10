@@ -23,6 +23,7 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
+
 /* Normlisera Student */
 DROP TABLE IF EXISTS Student;
 
@@ -37,6 +38,21 @@ CREATE Table Student (
 INSERT INTO Student (StudentId, FirstName, LastName)
 SELECT DISTINCT Id, SUBSTRING_INDEX(Name, ' ', 1), SUBSTRING_INDEX(Name, ' ', -1)
 FROM UNF;
+
+
+/* Normalisera betyg */
+DROP TABLE IF EXISTS Grade;
+CREATE TABLE Grade (
+    GradeId INT NOT NULL AUTO_INCREMENT,
+    Assessment VARCHAR(255) NOT NULL,
+    CONSTRAINT PRIMARY KEY (GradeId)
+)  ENGINE=INNODB;
+
+INSERT INTO Grade(Assessment) 
+SELECT DISTINCT Grade FROM UNF;
+
+UPDATE Student JOIN UNF ON (StudentID = Id) JOIN Grade ON Grade.Assessment = UNF.Grade
+SET  Student.GradeId =  Grade.GradeId;
 
 
 /* Normalisera School */
