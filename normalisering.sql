@@ -23,6 +23,7 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
+/* Normlisera Student */
 DROP TABLE IF EXISTS Student;
 
 CREATE Table Student (
@@ -32,4 +33,17 @@ CREATE Table Student (
 	GradeId INT,
         CONSTRAINT PRIMARY KEY (StudentId)
 ) ENGINE=INNODB;
+
+INSERT INTO Student (StudentId, FirstName, LastName)
+SELECT DISTINCT Id, SUBSTRING_INDEX(Name, ' ', 1), SUBSTRING_INDEX(Name, ' ', -1)
+FROM UNF;
+
+
+/* Normalisera School */
+DROP TABLE IF EXISTS School;
+CREATE TABLE School AS SELECT DISTINCT 0 As SchoolId, School As Name, City FROM UNF;
+
+SET @id = 0;
+UPDATE School SET SchoolId =  (SELECT @id := @id + 1);
+
 
