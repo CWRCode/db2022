@@ -1,4 +1,4 @@
-package se.iths;
+package db2022.iths;
 
 public class App {
   
