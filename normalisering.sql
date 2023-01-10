@@ -23,3 +23,13 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
+DROP TABLE IF EXISTS Student;
+
+CREATE Table Student (
+        StudentId INT NOT NULL AUTO_INCREMENT,
+        FirstName VARCHAR(255) NOT NULL,
+        LastName VARCHAR(255) NOT NULL,
+	GradeId INT,
+        CONSTRAINT PRIMARY KEY (StudentId)
+) ENGINE=INNODB;
+
