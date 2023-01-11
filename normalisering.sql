@@ -100,7 +100,6 @@ CREATE VIEW PhoneList AS SELECT StudentId, group_concat(Number) AS Numbers FROM 
 
 
 /* Normalisera hobby */
-
 DROP TABLE IF EXISTS HobbyList;
 CREATE TABLE HobbyList AS SELECT DISTINCT 0 As HobbyId, trim(SUBSTRING_INDEX(Hobbies, ",", 1)) AS Hobby FROM UNF
 WHERE Hobbies IS NOT NULL AND Hobbies != ''
@@ -115,7 +114,7 @@ UPDATE HobbyList SET HobbyId =  (SELECT @id := @id + 1);
 
 ALTER TABLE HobbyList ADD PRIMARY KEY(HobbyId);
 
-/* --- */
+
 
 DROP TABLE IF EXISTS Hobbies;
 CREATE TABLE Hobbies (
@@ -132,7 +131,11 @@ UNION SELECT Id As StudentId, trim(substring_index(Hobbies, ",", -1)) AS Hobby F
 WHERE Hobbies IS NOT NULL AND Hobbies != ''
 ;
 
-/* skapa kopplingstabell student-hobbies */
+DROP VIEW IF EXISTS StudentHobbiesGroup;
+CREATE VIEW StudentHobbiesGroup AS SELECT Hobbies.StudentId AS StudentId, group_concat(Hobbies.Hobby) AS Hobby FROM Hobbies INNER JOIN HobbyList USING (Hobby)
+GROUP BY StudentId;
+
+
 DROP TABLE IF EXISTS StudentHobbies;
 CREATE TABLE StudentHobbies (
     StudentId INT NOT NULL,
@@ -143,15 +146,17 @@ CREATE TABLE StudentHobbies (
 INSERT INTO StudentHobbies(StudentId, HobbyId)
 SELECT Hobbies.StudentId AS StudentId, HobbyList.HobbyId AS HobbyId FROM Hobbies JOIN HobbyList USING (Hobby);
 
-DROP VIEW IF EXISTS HobbiesView;
-CREATE VIEW HobbiesView AS SELECT StudentId, group_concat(Hobby) FROM StudentHobbies JOIN HobbyList USING (HobbyId) 
+
+DROP VIEW IF EXISTS StudentHobbiesView;
+CREATE VIEW StudentHobbiesView AS SELECT StudentId, group_concat(Hobby) AS Hobbies FROM StudentHobbies JOIN HobbyList USING (HobbyId)
 GROUP BY StudentId;
 
-DROP VIEW IF EXISTS NormalizedUNF;
-CREATE VIEW NormalizedUNF AS
-SELECT StudentId as ID, Student.Name, Grade.Assessment AS Grade, Hobbies, School.Name AS School, City, Numbers FROM StudentSchool
+
+DROP VIEW IF EXISTS NormalizationUNF;
+CREATE VIEW NormalizationUNF AS
+SELECT StudentId as ID, Student.FirstName, Student.Lastname, Grade.Assessment AS Grade, StudentHobbiesView.Hobbies, School.Name AS School, City, Numbers FROM StudentSchool
 LEFT JOIN Student USING (StudentId)
 LEFT JOIN Grade USING (GradeId)
-LEFT JOIN HobbiesView USING (StudentId)
+LEFT JOIN StudentHobbiesView USING (StudentId)
 LEFT JOIN School USING (SchoolId)
 LEFT JOIN PhoneList USING (StudentId);
